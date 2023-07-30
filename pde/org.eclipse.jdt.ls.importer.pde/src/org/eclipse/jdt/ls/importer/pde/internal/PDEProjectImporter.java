@@ -20,9 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.ls.core.internal.AbstractProjectImporter;
@@ -103,9 +105,13 @@ public class PDEProjectImporter extends AbstractProjectImporter {
 
 		// import projects
 		EclipseProjectImporter importer = new EclipseProjectImporter();
+		ProjectDescriptorGenerator generator = new ProjectDescriptorGenerator();
 		for (String project : projects) {
 			File projectFolder = new File(rootFolder, project);
-			if (projectFolder.exists() && new File(projectFolder, DESCRIPTION_FILE_NAME).exists()) {
+			IPath projecPath = new Path(projectFolder.getAbsolutePath());
+			if (projectFolder.exists() && generator.applies(projecPath)) {
+				generator.importAsProject(projecPath, monitor);
+			} else if (projectFolder.exists() && new File(projectFolder, DESCRIPTION_FILE_NAME).exists()) {
 				importer.importDir(projectFolder.toPath(), monitor.split(1));
 			} else {
 				PDEImporterActivator.logError("Project " + projectFolder.toPath() + " does not exist. Ignoring.");

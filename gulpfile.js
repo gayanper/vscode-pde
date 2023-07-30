@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const gulp = require('gulp');
 const gulp_tslint = require('gulp-tslint');
+const del = require('gulp-delete-file')
 // const download = require('download');
 const cp = require('child_process');
 const server_dir = './pde';
@@ -14,6 +15,7 @@ const pluginGlobs = [
     repo + 'org.eclipse.ecf_**',
     repo + 'org.eclipse.equinox.p2.core_**',
     repo + 'org.eclipse.equinox.p2.touchpoint.natives_**',
+    repo + 'org.eclipse.equinox.p2.director.app_**',
     repo + 'org.sat4j.core_**',
     repo + 'org.eclipse.equinox.p2.transport.ecf_**',
     repo + 'org.eclipse.ecf.provider.filetransfer_**',
@@ -37,8 +39,8 @@ const pluginGlobs = [
     repo + 'org.eclipse.equinox.p2.metadata.repository_**',
     repo + 'org.eclipse.equinox.p2.publisher.eclipse_**',
     repo + 'org.eclipse.equinox.p2.repository_**',
-    repo + 'bcpg_**',
-    repo + 'bcprov_**',
+    repo + 'org.bouncycastle.bcpg_**',
+    repo + 'org.bouncycastle.bcprov_**',
     repo + 'org.eclipse.e4.core.contexts_**',
     repo + 'org.eclipse.e4.core.services_**',
     repo + 'org.eclipse.e4.core.di_**',
@@ -53,9 +55,10 @@ const pluginGlobs = [
     repo + 'javax.annotation_**',
     repo + 'biz.aQute.bnd.util_**',
     repo + 'biz.aQute.bndlib_**',
+    repo + 'org.osgi.service.repository_**',
     repo + 'org.eclipse.m2e.pde.target_**',
     repo + 'org.osgi.service.repository_**',
-    repo + 'org.apache.commons.commons-io_**'
+    repo + 'org.apache.commons.io_**'
 ];
 
 gulp.task('tslint', () => {
@@ -66,21 +69,16 @@ gulp.task('tslint', () => {
 
 gulp.task('patch_version', (cb) => {
     const packageJsonData = require('./package.json');
-    const javaExtensions = packageJsonData.contributes.javaExtensions;
-    if (Array.isArray(javaExtensions)) {
-        packageJsonData.contributes.javaExtensions  = javaExtensions.map((extensionString) => {
-            
-            const ind = extensionString.indexOf('_');
-            const fileName = findNewPDEPlugin(extensionString.substring(extensionString.lastIndexOf('/') + 1, ind));
-            
-            if (ind >= 0) {
-                return extensionString.substring(0, extensionString.lastIndexOf('/') + 1) + fileName;
-            }
-            return extensionString;
-        });
-
-        fs.writeFileSync('./package.json', JSON.stringify(packageJsonData, null, 2));
-    }
+    const javaExtensions = [];
+    const serverFolder = path.resolve('./server');
+    const extFiles = fs.readdirSync(serverFolder);
+    extFiles.forEach(fpath => {
+        if(fpath.endsWith('.jar')) {
+            javaExtensions.push('./server/' + fpath.substring(fpath.lastIndexOf('/') + 1));
+        }
+    });
+    packageJsonData.contributes.javaExtensions = javaExtensions;
+    fs.writeFileSync('./package.json', JSON.stringify(packageJsonData, null, 2));
     cb();
 });
 
@@ -92,6 +90,7 @@ gulp.task('patch_version', (cb) => {
 
 gulp.task('build_server', () => {
     cp.execSync(mvnw() + ' clean package', { cwd: server_dir, stdio: [0, 1, 2] });
+    fs.rmdirSync('./server', {recursive: true, force: true});
     return gulp.src(pluginGlobs)
         .pipe(gulp.dest('./server'));
 });

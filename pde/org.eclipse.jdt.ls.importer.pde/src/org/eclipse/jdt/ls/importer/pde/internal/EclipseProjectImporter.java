@@ -69,6 +69,7 @@ public class EclipseProjectImporter extends AbstractProjectImporter {
 		SubMonitor monitor = SubMonitor.convert(m, 4);
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IPath dotProjectPath = new Path(dir.resolve(DESCRIPTION_FILE_NAME).toAbsolutePath().toString());
+
 		IProjectDescription descriptor;
 		try {
 			descriptor = workspace.loadProjectDescription(dotProjectPath);

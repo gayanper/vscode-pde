@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <bundle id="org.eclipse.jdt.ls.importer.pde" version="1.4.3.qualifier"/>
+   <bundle id="org.eclipse.jdt.ls.importer.pde" version="1.4.3.qualifier" />
+   <bundle id="org.bouncycastle.bcpg" version="0.0.0" />
+   <bundle id="org.eclipse.ecf.filetransfer" version="0.0.0" />
+   <bundle id="biz.aQute.bnd.util" version="0.0.0" />
 </site>

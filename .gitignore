@@ -4,3 +4,4 @@ target/
 *.vsix
 server/
 maven-wrapper.jar
+**/.DS_Store
