@@ -13,8 +13,11 @@ package org.eclipse.jdt.ls.importer.pde.internal;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -73,6 +76,7 @@ class TestInfo {
 	public String jreContainer = "org.eclipse.jdt.launching.JRE_CONTAINER";
 	public String testBundle = "";
 	public boolean useUIThread = false;
+	public List<String> vmArgs = new ArrayList<>();
 
 	public Map<String, String> toValueMap() {
 		Map<String, String> valueMap = new HashMap<>();
@@ -85,10 +89,9 @@ class TestInfo {
 		valueMap.put("testBundle", testBundle);
 		valueMap.put("useUIThread", String.valueOf(useUIThread));
 		if (Platform.OS_MACOSX.equals(Platform.getOS())) {
-			valueMap.put("vmArgs", "-XstartOnFirstThread");
-		} else {
-			valueMap.put("vmArgs", "");
+			vmArgs.add("-XstartOnFirstThread");
 		}
+		valueMap.put("vmArgs", vmArgs.stream().collect(Collectors.joining(" ")));
 		return valueMap;
 	}
 }

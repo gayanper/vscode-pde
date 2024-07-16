@@ -17,6 +17,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -72,13 +73,17 @@ public class PDEDelegateCommandHandler implements IDelegateCommandHandler {
 				String testFileUri = (String) arguments.get(0);
 				String method = null;
 				boolean useUIThread = false;
+				List<String> vmArgs = Collections.emptyList();
 				if (arguments.size() > 1) {
 					useUIThread = Boolean.valueOf(arguments.get(1).toString());
 				}
 				if (arguments.size() > 2) {
-					method = (String) arguments.get(2);
+					vmArgs = (List<String>) arguments.get(2);
 				}
-				return resolveJunitArguments(testFileUri, method, useUIThread, monitor);
+				if (arguments.size() > 3) {
+					method = (String) arguments.get(3);
+				}
+				return resolveJunitArguments(testFileUri, method, useUIThread, vmArgs, monitor);
 			default:
 				break;
 		}
@@ -165,7 +170,7 @@ public class PDEDelegateCommandHandler implements IDelegateCommandHandler {
 		}
 	}
 
-	private static Object resolveJunitArguments(String testFileUri, String method, boolean useUIThread, IProgressMonitor monitor) throws Exception {
+	private static Object resolveJunitArguments(String testFileUri, String method, boolean useUIThread, List<String> vmArgs, IProgressMonitor monitor) throws Exception {
 		File file = Paths.get(new URI(testFileUri)).toFile();
 		String simpleName = getSimpleName(file);
 		if (file.isFile()) {
@@ -185,6 +190,7 @@ public class PDEDelegateCommandHandler implements IDelegateCommandHandler {
 			testInfo.jreContainer = getJREContainer(cu.getJavaProject());
 			testInfo.testBundle = getBundleName(type.getJavaProject().getProject());
 			testInfo.useUIThread = useUIThread;
+			testInfo.vmArgs = vmArgs == null ? new ArrayList<>() : vmArgs;
 			if (!StringUtils.isBlank(method)) {
 				simpleName += "." + method;
 			}
